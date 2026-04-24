@@ -1,5 +1,6 @@
 #kode ini berisi script untuk melakukan retrain model cosine similarity berdasarkan data terbaru yang ada di database. Script ini akan mengambil data course dari database, memprosesnya menggunakan TF-IDF, menghitung cosine similarity, dan menyimpan model yang sudah di-train ke dalam file joblib yang akan digunakan oleh aplikasi rekomendasi course.
 
+from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
 import joblib
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -23,10 +24,13 @@ def run_retrain():
     # Gabungkan fitur teks untuk dihitung kemiripannya 
     df['metadata'] = df['title'] + " " + df['skills'] + " " + df['description']
     # Pastikan tidak ada nilai NaN di kolom metadata (jika ada, ganti dengan string kosong)
-    df['metadata'] = df['metadata'].fillna('')
+    df['metadata'] = df['metadata'].fillna('').str.lower()
 
+    # Ambil daftar stop words bahasa Indonesia dari Sastrawi
+    factory = StopWordRemoverFactory()
+    id_stop_words = factory.get_stop_words()
     # Proses TF-IDF
-    tfidf = TfidfVectorizer(stop_words='english')
+    tfidf = TfidfVectorizer(stop_words=id_stop_words)
     tfidf_matrix = tfidf.fit_transform(df['metadata'])
 
     # Hitung Cosine Similarity
