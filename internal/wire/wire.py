@@ -1,3 +1,5 @@
+#kode ini berisi wiring untuk menghubungkan semua komponen yang dibutuhkan untuk menjalankan aplikasi rekomendasi course. Wiring ini akan memuat model cosine similarity dan vectorizer yang sudah di-train, serta menghubungkan repository dan usecase untuk menghasilkan rekomendasi course yang sesuai dengan title yang diberikan.
+
 import joblib
 import os
 from fastapi import Depends
@@ -6,7 +8,7 @@ from pkg.database.postgress import get_db
 from internal.data.repository.course import CourseRepository
 from internal.usecase.recomendation import CourseUsecase
 
-# Sesuaikan dengan path yang kamu punya
+# model path untuk load joblib
 MODEL_PATH = "pkg/ml-models/cosine_sim_model.joblib"
 TFIDF_PATH = "pkg/ml-models/tfidf_vectorizer.joblib"
 

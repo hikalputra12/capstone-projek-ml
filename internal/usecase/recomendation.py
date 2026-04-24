@@ -1,3 +1,5 @@
+#kode ini berisi logika bisnis untuk memproses data course yang diambil dari database dan menghasilkan rekomendasi course yang sesuai dengan title yang diberikan. Usecase ini akan menggunakan repository untuk mengambil data dari database dan juga menggunakan matriks cosine similarity yang sudah di-load untuk menghitung skor similarity antara course yang diberikan dengan course lainnya.
+
 from internal.data.repository.course import CourseRepository
 from internal.data.dto.course import RecommendationBaseResponse, CourseRecommendationResponse
 
@@ -34,7 +36,7 @@ class CourseUsecase:
             print(f"--- [DEBUG] Usecase: Judul '{title}' tidak ditemukan di database ---")
             return None
 
-        # 3. Proses Skor Similarity
+        #Proses Skor Similarity
         try:
             # Pastikan idx tidak melebihi ukuran matriks
             if idx >= len(self.cosine_sim):
@@ -65,9 +67,10 @@ class CourseUsecase:
             if i < len(df):
                 row = df.iloc[i]
                 
-                # CRITICAL: Pastikan semua data diconvert ke tipe data Python standar (str/float)
+                # Pastikan semua data diconvert ke tipe data Python standar (str/float)
                 # Pydantic/FastAPI sering gagal validasi jika tipenya numpy.float64
                 rec_item = CourseRecommendationResponse(
+                    id=int(row['id']),  # Pastikan ID juga dikonversi ke int
                     title=str(row['title']),
                     cosine_score=round(float(score), 4),
                     level=str(row.get('level', 'N/A')),

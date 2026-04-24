@@ -5,11 +5,11 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from pkg.utils.config import settings
 
-# 1. Setup Logging (Opsional, agar terlihat seperti GORM)
+# Setup Logging
 logging.basicConfig()
 logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
-# 2. Inisialisasi Base
+# Inisialisasi Base
 # Ini digunakan oleh semua file di folder 'internal/data/entity/'
 Base = declarative_base()
 
@@ -25,7 +25,7 @@ def init_db():
     )
 
     try:
-        # Create Engine dengan Pool Settings (Mirip konfigurasi Go/GORM kamu)
+        # Create Engine dengan Pool Settings 
         engine = create_engine(
             conn_str,
             pool_size=int(settings.DATABASE_MAX_OPEN_CONN),      # Jumlah koneksi standby
@@ -54,7 +54,7 @@ def init_db():
         print(f"Error Detail: {str(e)}")
         sys.exit(1)
 
-# 3. Eksekusi Inisialisasi secara Global
+# Eksekusi Inisialisasi secara Global
 # Agar variabel 'engine' dan 'SessionLocal' bisa di-import oleh file lain
 try:
     engine, SessionLocal = init_db()
@@ -62,7 +62,7 @@ except Exception:
     # Handle jika ada error saat inisialisasi di luar fungsi
     sys.exit(1)
 
-# 4. Generator get_db untuk FastAPI Dependency Injection
+# Generator get_db untuk FastAPI Dependency Injection
 def get_db():
     """
     Fungsi ini akan dipanggil oleh wire.py untuk menyuntikkan 

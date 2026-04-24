@@ -1,3 +1,5 @@
+#kode ini berisi script untuk melakukan retrain model cosine similarity berdasarkan data terbaru yang ada di database. Script ini akan mengambil data course dari database, memprosesnya menggunakan TF-IDF, menghitung cosine similarity, dan menyimpan model yang sudah di-train ke dalam file joblib yang akan digunakan oleh aplikasi rekomendasi course.
+
 import joblib
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -7,7 +9,7 @@ from pkg.database.postgress import engine # Mengambil koneksi DB kamu
 def run_retrain():
     print("--- [RETRAIN] Memulai proses sinkronisasi model dengan Database ---")
     
-    # 1. Ambil data asli dari Database agar urutan INDEX SAMA PERSIS
+    #  Ambil data asli dari Database agar urutan INDEX SAMA PERSIS
     # Pastikan ORDER BY id agar urutannya konsisten
     query = "SELECT id, title, skills, description FROM courses ORDER BY id ASC"
     df = pd.read_sql(query, engine)
@@ -18,19 +20,19 @@ def run_retrain():
 
     print(f"--- [RETRAIN] Training menggunakan {len(df)} data dari database. ---")
 
-    # 2. Gabungkan fitur teks untuk dihitung kemiripannya
-    # Kamu bisa sesuaikan kolom apa saja yang ingin digabung
+    # Gabungkan fitur teks untuk dihitung kemiripannya 
     df['metadata'] = df['title'] + " " + df['skills'] + " " + df['description']
+    # Pastikan tidak ada nilai NaN di kolom metadata (jika ada, ganti dengan string kosong)
     df['metadata'] = df['metadata'].fillna('')
 
-    # 3. Proses ML: TF-IDF
+    # Proses TF-IDF
     tfidf = TfidfVectorizer(stop_words='english')
     tfidf_matrix = tfidf.fit_transform(df['metadata'])
 
-    # 4. Hitung Cosine Similarity
+    # Hitung Cosine Similarity
     cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
 
-    # 5. Simpan Model Baru (Timpa file yang lama)
+    # Simpan Model Baru (Timpa file yang lama)
     MODEL_PATH = "pkg/ml-models/cosine_sim_model.joblib"
     VECTOR_PATH = "pkg/ml-models/tfidf_vectorizer.joblib"
     

@@ -1,3 +1,5 @@
+#kode berisi definisi entity untuk course yang akan digunakan untuk menyimpan data course yang diambil dari database. Entity ini akan digunakan oleh usecase untuk memproses data dan menghasilkan rekomendasi course yang sesuai dengan title yang diberikan.
+
 from sqlalchemy import Column, Integer, Text
 from pkg.database.postgress import Base
 
