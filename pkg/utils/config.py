@@ -18,4 +18,7 @@ class Settings:
     DATABASE_MAX_IDLE_CONN = os.getenv("DATABASE_MAX_IDLE_CONN", 5)
     DATABASE_MAX_OPEN_CONN = os.getenv("DATABASE_MAX_OPEN_CONN", 10)
 
+    # Kunci API Google 
+    GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+
 settings = Settings()
