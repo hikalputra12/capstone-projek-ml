@@ -49,8 +49,8 @@ def get_course_repository(db: Session = Depends(get_db)) -> CourseRepository:
 def get_course_usecase(
     repo: CourseRepository = Depends(get_course_repository)
 ) -> CourseUsecase:
-    """Menghubungkan repository dengan matriks cosine similarity."""
-    return CourseUsecase(repo, _cosine_sim)
+    """Menghubungkan repository dengan matriks cosine similarity dan TF-IDF vectorizer."""
+    return CourseUsecase(repo, _cosine_sim, _tfidf_vectorizer)
 
 # --- Dependencies untuk CHATBOT AI ---
 

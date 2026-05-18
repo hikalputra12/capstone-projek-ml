@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
 
 def create_app() -> FastAPI:
     app = FastAPI(
-        title="EduPulse AI Engine",
+        title="BrainPath AI Engine",
         description="API untuk Sistem Rekomendasi Kursus dan Chatbot Akademik berbasis RAG",
         version="1.0.0",
         lifespan=lifespan 
@@ -57,7 +57,7 @@ def create_app() -> FastAPI:
     def root():
         log.debug("Root endpoint diakses")
         return {
-            "message": "Welcome to EduPulse AI Engine",
+            "message": "Welcome to BrainPath AI Engine",
             "features": ["Course Recommendation", "AI Chatbot Assistant"]
         }
 

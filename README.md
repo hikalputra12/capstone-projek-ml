@@ -1,4 +1,4 @@
-# EduPulse AI - Course Recommendation System
+# BrainPath AI - Course Recommendation System
 
 Sistem rekomendasi kursus berbasis Machine Learning yang dikembangkan menggunakan **FastAPI** dan **PostgreSQL**. Projek ini merupakan bagian dari sistem edukasi cerdas yang memberikan rekomendasi konten pembelajaran berdasarkan kemiripan deskripsi dan kategori kursus.
 

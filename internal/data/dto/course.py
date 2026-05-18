@@ -8,7 +8,7 @@ class CourseRecommendationResponse(BaseModel):
     id: int
     title: str
     cosine_score: float
-    level: Optional[str]
+    category: Optional[str]
     skills: Optional[str]
 
     class Config:

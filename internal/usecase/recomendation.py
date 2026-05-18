@@ -2,15 +2,43 @@
 
 from internal.data.repository.course import CourseRepository
 from internal.data.dto.course import RecommendationBaseResponse, CourseRecommendationResponse
+from sklearn.metrics.pairwise import cosine_similarity
 
 class CourseUsecase:
-    def __init__(self, repo: CourseRepository, cosine_sim):
+    def __init__(self, repo: CourseRepository, cosine_sim, tfidf_vectorizer=None):
         """
         Inisialisasi Usecase.
-        cosine_sim: matriks hasil load joblib (numpy array)
+        cosine_sim       : matriks hasil load joblib (numpy array)
+        tfidf_vectorizer : TF-IDF vectorizer untuk keyword/cold-start search
         """
         self.repo = repo
         self.cosine_sim = cosine_sim
+        self.tfidf = tfidf_vectorizer
+
+    def _keyword_search(self, query: str, df) -> list:
+        """
+        Fallback: transform query menggunakan TF-IDF vectorizer
+        dan hitung cosine similarity terhadap semua course.
+        Digunakan saat query tidak cocok dengan judul course manapun (cold-start).
+        """
+        if self.tfidf is None:
+            print("--- [DEBUG] TF-IDF vectorizer tidak tersedia untuk keyword search ---")
+            return []
+
+        # Buat metadata gabungan untuk setiap course (sama dengan saat training)
+        df['metadata'] = (df['title'] + " " + df['skills'].fillna('') + " " + df['description'].fillna('')).str.lower()
+
+        # Transform semua course menggunakan vectorizer yang sudah di-fit
+        course_matrix = self.tfidf.transform(df['metadata'])
+
+        # Transform query (keyword/interest dari user)
+        query_vector = self.tfidf.transform([query.lower()])
+
+        # Hitung cosine similarity antara query dan semua course
+        sim_scores = cosine_similarity(query_vector, course_matrix).flatten()
+        top_indices = sim_scores.argsort()[::-1][:5]  # Ambil top 5
+
+        return [(int(i), float(sim_scores[i])) for i in top_indices if sim_scores[i] > 0]
 
     def get_recommendations(self, title: str) -> RecommendationBaseResponse:
         # 1. Tarik semua data dari DB
@@ -18,70 +46,65 @@ class CourseUsecase:
         
         if df.empty:
             print("--- [DEBUG] Usecase: Database kosong! ---")
-            return None
+            return RecommendationBaseResponse(target_course=title, recommendations=[])
 
         if self.cosine_sim is None:
             print("--- [DEBUG] Usecase: Matriks Cosine Similarity NULL! ---")
-            return None
+            return RecommendationBaseResponse(target_course=title, recommendations=[])
 
         # 2. Cari indeks berdasarkan judul (Case-insensitive & strip)
         target_title = title.strip().lower()
         df_search = df['title'].str.strip().str.lower()
-        
-        try:
-            # Mencari indeks baris yang cocok
-            idx = df[df_search == target_title].index[0]
-            print(f"--- [DEBUG] Usecase: Target '{title}' ditemukan di indeks {idx} ---")
-        except IndexError:
-            print(f"--- [DEBUG] Usecase: Judul '{title}' tidak ditemukan di database ---")
-            return None
+        matches = df[df_search == target_title]
 
-        #Proses Skor Similarity
-        try:
-            # Pastikan idx tidak melebihi ukuran matriks
-            if idx >= len(self.cosine_sim):
-                print(f"--- [DEBUG] ERROR: Indeks {idx} di luar jangkauan matriks (size: {len(self.cosine_sim)}) ---")
-                return None
+        use_keyword_search = matches.empty
+        top_matches = []
+        display_target = title  # nama yang ditampilkan di response
 
-            # Ambil skor untuk baris ke-idx
-            raw_scores = self.cosine_sim[idx]
-            
-            # Ubah ke list of tuples (index, score)
-            sim_scores = list(enumerate(raw_scores))
-            
-            # Urutkan berdasarkan skor terbesar (descending)
-            sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
-            
-            # Ambil peringkat 2 sampai 6 (melewati diri sendiri)
-            top_matches = sim_scores[1:6]
-            print(f"--- [DEBUG] Usecase: 5 Skor teratas: {top_matches} ---")
+        if not use_keyword_search:
+            # ── Exact match: gunakan cosine_sim matrix ────────────────────────
+            idx = matches.index[0]
+            print(f"--- [DEBUG] Usecase: Exact match '{title}' di indeks {idx} ---")
+            display_target = str(df.iloc[idx]['title'])
 
-        except Exception as e:
-            print(f"--- [DEBUG] ERROR saat memproses skor: {str(e)} ---")
-            return None
+            try:
+                if idx >= len(self.cosine_sim):
+                    print(f"--- [DEBUG] ERROR: Indeks {idx} di luar jangkauan matriks ---")
+                    use_keyword_search = True
+                else:
+                    raw_scores = self.cosine_sim[idx]
+                    sim_scores = sorted(enumerate(raw_scores), key=lambda x: x[1], reverse=True)
+                    top_matches = sim_scores[1:6]  # skip diri sendiri
+                    print(f"--- [DEBUG] 5 Skor teratas: {top_matches} ---")
+            except Exception as e:
+                print(f"--- [DEBUG] ERROR saat memproses skor: {str(e)} ---")
+                use_keyword_search = True
 
-        # 4. Mapping ke DTO
+        if use_keyword_search:
+            # ── Keyword/cold-start fallback: gunakan TF-IDF transform ─────────
+            print(f"--- [DEBUG] Usecase: '{title}' tidak ditemukan, fallback ke keyword search ---")
+            top_matches = self._keyword_search(title, df.copy())
+            if not top_matches:
+                print("--- [DEBUG] Keyword search tidak menemukan hasil ---")
+                return RecommendationBaseResponse(target_course=title, recommendations=[])
+
+        # 3. Mapping ke DTO
         recommendations = []
         for i, score in top_matches:
-            # Pastikan i ada di dalam dataframe
             if i < len(df):
                 row = df.iloc[i]
-                
-                # Pastikan semua data diconvert ke tipe data Python standar (str/float)
-                # Pydantic/FastAPI sering gagal validasi jika tipenya numpy.float64
                 rec_item = CourseRecommendationResponse(
-                    id=int(row['id']),  # Pastikan ID juga dikonversi ke int
+                    id=int(row['id']),
                     title=str(row['title']),
                     cosine_score=round(float(score), 4),
-                    level=str(row.get('level', 'N/A')),
+                    category=str(row.get('category', 'N/A')),
                     skills=str(row.get('skills', 'N/A'))
                 )
                 recommendations.append(rec_item)
-                print(f"--- [DEBUG] Added: {row['title']} (Score: {score}) ---")
+                print(f"--- [DEBUG] Added: {row['title']} (Score: {score:.4f}) ---")
 
-        # 5. Return Response
-        print(f"--- [DEBUG] Usecase: Berhasil mengembalikan {len(recommendations)} rekomendasi ---")
+        print(f"--- [DEBUG] Usecase: Mengembalikan {len(recommendations)} rekomendasi ---")
         return RecommendationBaseResponse(
-            target_course=str(df.iloc[idx]['title']),
+            target_course=display_target,
             recommendations=recommendations
         )

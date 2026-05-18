@@ -10,7 +10,7 @@ def init_logger(log_path: str, debug: bool = False):
     if not os.path.exists(log_dir):
         os.makedirs(log_dir, exist_ok=True)
 
-    logger = logging.getLogger("EduPulse-AI")
+    logger = logging.getLogger("BrainPath-AI")
     
     # Set Level
     level = logging.DEBUG if debug else logging.INFO
