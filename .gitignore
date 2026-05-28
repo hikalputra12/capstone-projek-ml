@@ -40,3 +40,8 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+
+# Capstone requirement: ML Models should be in Google Drive, not Github
+pkg/ml-models/*.joblib
+pkg/ml-models/chroma_db*
+

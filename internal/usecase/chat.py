@@ -15,7 +15,7 @@ class ChatUsecase:
         self.embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
         
         # Database Vektor ChromaDB
-        db_path = "pkg/ml-models/chroma_db"
+        db_path = "pkg/ml-models/chroma_db2"
         self.vector_db = Chroma(
             persist_directory=db_path, 
             embedding_function=self.embeddings

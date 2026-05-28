@@ -8,7 +8,7 @@ if __name__ == "__main__":
     uvicorn.run(
         "server.server:create_app", # Langsung panggil factory function-nya
         host="0.0.0.0", 
-        port=8000, 
+        port=8001, 
         reload=True,
         factory=True #memberitau uvicorn bahwa ini adalah factory function
     )

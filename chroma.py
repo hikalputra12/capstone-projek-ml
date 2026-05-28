@@ -10,7 +10,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pkg.database.postgress import engine
 
 # Lokasi folder ChromaDB
-DB_DIR = "pkg/ml-models/chroma_db"
+DB_DIR = "pkg/ml-models/chroma_db2"
 
 
 def run_sync():
@@ -18,7 +18,7 @@ def run_sync():
 
     # Ambil data materi menggunakan engine
     # Query disesuaikan dengan skema tabel terbaru
-    query = "SELECT id, title, content FROM courses WHERE content IS NOT NULL"
+    query = "SELECT id, title, description, summary, learning_points FROM courses WHERE is_published = true"
 
     try:
         df = pd.read_sql(query, engine)
@@ -27,7 +27,7 @@ def run_sync():
         return
 
     if df.empty:
-        print("[WARNING] Tidak ada materi ditemukan. Pastikan tabel 'courses' sudah terisi kolom 'content'.")
+        print("[WARNING] Tidak ada materi ditemukan.")
         return
 
     # Proses Chunking (Memotong teks panjang agar LLM tidak bingung)
@@ -40,8 +40,12 @@ def run_sync():
     all_metadatas = []
 
     for _, row in df.iterrows():
-        # Gabungkan judul dan konten untuk memperkaya konteks pencarian
-        text_content = f"Kursus: {row['title']}\nMateri: {row['content']}"
+        # Gabungkan field untuk memperkaya konteks pencarian
+        desc = row['description'] if row['description'] else ""
+        summ = row['summary'] if row['summary'] else ""
+        lp = row['learning_points'] if row['learning_points'] else ""
+        
+        text_content = f"Kursus: {row['title']}\nDeskripsi: {desc}\nRingkasan: {summ}\nPoin Belajar: {lp}"
         chunks = text_splitter.split_text(text_content)
 
         all_texts.extend(chunks)
