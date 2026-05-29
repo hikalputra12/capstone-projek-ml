@@ -15,3 +15,8 @@ class CourseEntity(Base):
     order_index      = Column(Integer)
     duration_minutes = Column(Integer)
     is_published     = Column(Boolean)
+    external_url     = Column(Text)
+    level            = Column(Text)
+    summary          = Column(Text)
+    learning_points  = Column(Text)
+    duration_text    = Column(Text)
