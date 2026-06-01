@@ -45,3 +45,4 @@ go.work.sum
 pkg/ml-models/*.joblib
 pkg/ml-models/chroma_db*
 
+claude.md

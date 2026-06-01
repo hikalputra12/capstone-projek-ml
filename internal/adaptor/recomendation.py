@@ -1,4 +1,5 @@
-#kode ini untuk menghandle request rekomendasi course berdasarkan title yang diberikan, dan juga untuk logging performa dari request tersebut.
+# internal/adaptor/recomendation.py
+# Handler API untuk memproses permintaan rekomendasi course.
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from internal.usecase.recomendation import CourseUsecase
@@ -6,7 +7,9 @@ from internal.wire.wire import get_course_usecase
 import time
 
 router = APIRouter()
-@router.get("/recommend")
+
+# Endpoint Baru (GET /api/v1/recommendations)
+@router.get("/recommendations")
 def get_course_recommendations(
     title: str, 
     request: Request, 
@@ -21,10 +24,9 @@ def get_course_recommendations(
         result = usecase.get_recommendations(title)
         duration = time.time() - start_time
         
-        #masih belum benar dan perlu di perbaiki
-        # Mengambil jumlah item dari object response
-        item_count = len(result.data) if hasattr(result, 'data') else "unknown"
-        print(item_count)
+        # Perbaikan log item_count agar merujuk ke recommendations
+        item_count = len(result.recommendations) if hasattr(result, 'recommendations') else "unknown"
+        
         log.info("Request Success", extra={
             "latency": f"{duration:.4f}s",
             "items_found": item_count,

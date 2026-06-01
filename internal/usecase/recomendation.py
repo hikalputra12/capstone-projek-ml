@@ -1,4 +1,5 @@
-#kode ini berisi logika bisnis untuk memproses data course yang diambil dari database dan menghasilkan rekomendasi course yang sesuai dengan title yang diberikan. Usecase ini akan menggunakan repository untuk mengambil data dari database dan juga menggunakan matriks cosine similarity yang sudah di-load untuk menghitung skor similarity antara course yang diberikan dengan course lainnya.
+# internal/usecase/recomendation.py
+# Logika bisnis untuk menghitung dan merekomendasikan course serupa berdasarkan judul.
 
 from internal.data.repository.course import CourseRepository
 from internal.data.dto.course import RecommendationBaseResponse, CourseRecommendationResponse
@@ -25,8 +26,14 @@ class CourseUsecase:
             print("--- [DEBUG] TF-IDF vectorizer tidak tersedia untuk keyword search ---")
             return []
 
-        # Buat metadata gabungan untuk setiap course (sama dengan saat training)
-        df['metadata'] = (df['title'] + " " + df['skills'].fillna('') + " " + df['description'].fillna('')).str.lower()
+        # Buat metadata gabungan untuk setiap course (sama persis dengan saat training)
+        df['metadata'] = (
+            df['title'].fillna('') + " " + 
+            df['category'].fillna('') + " " + 
+            df['description'].fillna('') + " " + 
+            df['skills'].fillna('') + " " + 
+            df['summary'].fillna('')
+        ).str.strip().str.lower()
 
         # Transform semua course menggunakan vectorizer yang sudah di-fit
         course_matrix = self.tfidf.transform(df['metadata'])
@@ -41,11 +48,11 @@ class CourseUsecase:
         return [(int(i), float(sim_scores[i])) for i in top_indices if sim_scores[i] > 0]
 
     def get_recommendations(self, title: str) -> RecommendationBaseResponse:
-        # 1. Tarik semua data dari DB
+        # 1. Tarik data terfilter (hanya is_published = true, ORDER BY id ASC) dari DB
         df = self.repo.get_all_courses_dataframe()
         
         if df.empty:
-            print("--- [DEBUG] Usecase: Database kosong! ---")
+            print("--- [DEBUG] Usecase: Database kosong atau tidak ada course yang di-publish! ---")
             return RecommendationBaseResponse(target_course=title, recommendations=[])
 
         if self.cosine_sim is None:
@@ -73,8 +80,18 @@ class CourseUsecase:
                     use_keyword_search = True
                 else:
                     raw_scores = self.cosine_sim[idx]
+                    # Sort berdasarkan skor kemiripan tertinggi, lewati dirinya sendiri
                     sim_scores = sorted(enumerate(raw_scores), key=lambda x: x[1], reverse=True)
-                    top_matches = sim_scores[1:6]  # skip diri sendiri
+                    
+                    # Ambil top 5 rekomendasi (indeks ke-1 sampai ke-5, skip diri sendiri di indeks 0)
+                    top_matches = []
+                    for i, score in sim_scores:
+                        if i == idx:
+                            continue
+                        if len(top_matches) >= 5:
+                            break
+                        top_matches.append((i, score))
+                        
                     print(f"--- [DEBUG] 5 Skor teratas: {top_matches} ---")
             except Exception as e:
                 print(f"--- [DEBUG] ERROR saat memproses skor: {str(e)} ---")

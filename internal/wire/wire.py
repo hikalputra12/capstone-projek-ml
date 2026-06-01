@@ -1,3 +1,6 @@
+# internal/wire/wire.py
+# Wiring dependency injection untuk singleton instances (Cosine Sim, TF-IDF, ChatUsecase).
+
 import joblib
 import os
 from fastapi import Depends
@@ -35,9 +38,9 @@ def load_ml_components():
     else:
         print(f"--- Wiring Warning: ML Recommendation files not found ---")
 
-    # Inisialisasi Chatbot RAG (Fitur Baru Gemini)
+    # Inisialisasi Chatbot (Tanpa ChromaDB / RAG)
     if _chat_usecase is None:
-        print("--- Wiring: Initializing ChatUsecase (Gemini & ChromaDB) ---")
+        print("--- Wiring: Initializing ChatUsecase (Gemini with Postgres Metadata Guardrails) ---")
         _chat_usecase = ChatUsecase()
 
 # --- Dependencies untuk REKOMENDASI COURSE ---

@@ -1,3 +1,7 @@
+# server/server.py
+# Inisialisasi aplikasi FastAPI, konfigurasi middleware CORS, lifespan startup/shutdown,
+# dan registrasi router API.
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager 
@@ -6,7 +10,7 @@ from contextlib import asynccontextmanager
 from internal.adaptor.recomendation import router as course_handler 
 from internal.adaptor.chat import router as chat_handler 
 
-# Import wiring untuk memuat semua model (Cosine Sim & Gemini/ChromaDB)
+# Import wiring untuk memuat semua komponen ML (Cosine Similarity & Gemini)
 from internal.wire.wire import load_ml_components
 from pkg.utils.logger import init_logger 
 
@@ -17,8 +21,7 @@ log = init_logger("logs/", debug=True)
 async def lifespan(app: FastAPI):
     # --- Kode di sini dijalankan SAAT STARTUP ---
     try:
-        log.info("Memulai inisialisasi komponen Machine Learning (Rekomendasi & Chatbot)...")
-        # load_ml_components sekarang memuat model joblib DAN ChatUsecase Gemini
+        log.info("Memulai inisialisasi komponen Machine Learning (Rekomendasi & Chatbot Tanpa ChromaDB)...")
         load_ml_components()
         log.info("Semua komponen ML berhasil dimuat ke memori.")
     except Exception as e:
@@ -32,7 +35,7 @@ async def lifespan(app: FastAPI):
 def create_app() -> FastAPI:
     app = FastAPI(
         title="BrainPath AI Engine",
-        description="API untuk Sistem Rekomendasi Kursus dan Chatbot Akademik berbasis RAG",
+        description="API untuk Sistem Rekomendasi Kursus dan Chatbot Akademik berbasis Strict Guardrail",
         version="1.0.0",
         lifespan=lifespan 
     )
@@ -46,12 +49,13 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    #Daftarkan router untuk rekomendasi course
-    app.include_router(course_handler, prefix="/api/v1")
+    # Daftarkan router untuk rekomendasi course dan chatbot di prefix '/api/v1'
+    app.include_router(course_handler, prefix="/api/v1", tags=["Recommendation"])
+    app.include_router(chat_handler, prefix="/api/v1", tags=["Chatbot"])
     
-    # Daftarkan router untuk Chatbot AI Gemini
-    # Ini akan membuat endpoint: /api/v1/chat/ask
-    app.include_router(chat_handler, prefix="/api/v1/chat", tags=["Chatbot"])
+    # Juga daftarkan router di prefix root '/' untuk kompatibilitas langsung tanpa /api/v1
+    app.include_router(course_handler, tags=["Recommendation"])
+    app.include_router(chat_handler, tags=["Chatbot"])
 
     @app.get("/")
     def root():
