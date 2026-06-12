@@ -29,7 +29,7 @@ Hanya menampilkan course yang berstatus dipublikasikan (`is_published = true`) s
 *   **Method:** `GET`
 *   **Headers:**
     ```http
-    X-API-Key: brainpath_secret_token_change_me
+    X-API-Key: 8f9a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a
     ```
 *   **Query Parameters:**
     | Parameter | Tipe Data | Wajib | Deskripsi |
@@ -42,7 +42,7 @@ Hanya menampilkan course yang berstatus dipublikasikan (`is_published = true`) s
 curl -X 'GET' \
   'https://hero1012-brainpath-ai-engine.hf.space/api/v1/recommendations?title=Dasar%20Pemrograman%20Python&level=pemula' \
   -H 'accept: application/json' \
-  -H 'X-API-Key: brainpath_secret_token_change_me'
+  -H 'X-API-Key: 8f9a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a'
 ```
 
 #### 📤 Contoh Response Sukses (`200 OK`)
@@ -93,7 +93,7 @@ Mengajukan pertanyaan akademik ke Chatbot AI (BrainPath). Jawaban chatbot disint
 *   **Headers:**
     ```http
     Content-Type: application/json
-    X-API-Key: brainpath_secret_token_change_me
+    X-API-Key: 8f9a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a
     ```
 
 *Catatan Penting:* Parameter `course_id` dan `course_title` dikirim sebagai **Query Parameter** (di URL), sedangkan pertanyaan dikirim di **Request Body (JSON)**.
@@ -121,7 +121,7 @@ curl -X 'POST' \
   'https://hero1012-brainpath-ai-engine.hf.space/api/v1/chatbot?course_id=1' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
-  -H 'X-API-Key: brainpath_secret_token_change_me' \
+  -H 'X-API-Key: 8f9a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a' \
   -d '{
   "user_question": "Jelaskan apa itu variabel dalam Python."
 }'
