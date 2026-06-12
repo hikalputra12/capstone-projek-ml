@@ -6,14 +6,14 @@ Dokumentasi ini menjelaskan seluruh API endpoint yang tersedia pada **BrainPath 
 
 ## 🌐 Informasi Server Utama
 
-*   **Base URL Lokal:** `http://localhost:8001`
+*   **Base URL (Live Production):** `https://hero1012-brainpath-ai-engine.hf.space`
 *   **Format Data:** `application/json`
 
 ### 🔌 Dokumentasi Interaktif (Interactive API Docs)
 FastAPI secara otomatis menyediakan dokumentasi interaktif yang memungkinkan Anda menguji API secara langsung melalui browser ketika server sedang berjalan:
-*   **Swagger UI (Sangat Direkomendasikan untuk Pengujian):** [http://localhost:8001/docs](http://localhost:8001/docs)
-*   **ReDoc (Dokumentasi Terstruktur & Bersih):** [http://localhost:8001/redoc](http://localhost:8001/redoc)
-*   **OpenAPI Schema (Raw JSON):** [http://localhost:8001/openapi.json](http://localhost:8001/openapi.json)
+*   **Swagger UI (Sangat Direkomendasikan untuk Pengujian):** [https://hero1012-brainpath-ai-engine.hf.space/docs](https://hero1012-brainpath-ai-engine.hf.space/docs)
+*   **ReDoc (Dokumentasi Terstruktur & Bersih):** [https://hero1012-brainpath-ai-engine.hf.space/redoc](https://hero1012-brainpath-ai-engine.hf.space/redoc)
+*   **OpenAPI Schema (Raw JSON):** [https://hero1012-brainpath-ai-engine.hf.space/openapi.json](https://hero1012-brainpath-ai-engine.hf.space/openapi.json)
 
 ---
 
@@ -40,7 +40,7 @@ Hanya menampilkan course yang berstatus dipublikasikan (`is_published = true`) s
 #### 📥 Contoh Request (cURL)
 ```bash
 curl -X 'GET' \
-  'http://localhost:8001/api/v1/recommendations?title=Dasar%20Pemrograman%20Python&level=pemula' \
+  'https://hero1012-brainpath-ai-engine.hf.space/api/v1/recommendations?title=Dasar%20Pemrograman%20Python&level=pemula' \
   -H 'accept: application/json' \
   -H 'X-API-Key: brainpath_secret_token_change_me'
 ```
@@ -118,7 +118,7 @@ Mengajukan pertanyaan akademik ke Chatbot AI (BrainPath). Jawaban chatbot disint
 ##### 📥 Contoh Request (cURL)
 ```bash
 curl -X 'POST' \
-  'http://localhost:8001/api/v1/chatbot?course_id=1' \
+  'https://hero1012-brainpath-ai-engine.hf.space/api/v1/chatbot?course_id=1' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -H 'X-API-Key: brainpath_secret_token_change_me' \
@@ -143,7 +143,7 @@ curl -X 'POST' \
 #### 🛡️ Contoh Pengujian Guardrail (Pertanyaan Melenceng/Di Luar Topik)
 
 ##### 📥 Request URL & Body
-`POST http://localhost:8001/api/v1/chatbot?course_id=1`
+`POST https://hero1012-brainpath-ai-engine.hf.space/api/v1/chatbot?course_id=1`
 ```json
 {
   "user_question": "Bagaimana cara memasak rendang?"
