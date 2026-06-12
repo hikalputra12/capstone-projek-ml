@@ -6,12 +6,13 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from internal.usecase.chat import ChatUsecase
 from internal.wire.wire import get_chat_usecase
 from internal.data.dto.chat import ChatbotRequest, ChatResponse
+from pkg.utils.security import get_api_key
 
 router = APIRouter()
 
 # Endpoint Baru (POST /api/v1/chatbot)
 # Menerima course_id dan course_title sebagai query parameter, bukan di JSON request body
-@router.post("/chatbot", response_model=ChatResponse)
+@router.post("/chatbot", response_model=ChatResponse, dependencies=[Depends(get_api_key)])
 def chatbot_endpoint(
     payload: ChatbotRequest, 
     course_id: Optional[int] = Query(None, description="ID Kursus acuan yang sedang dipelajari"),

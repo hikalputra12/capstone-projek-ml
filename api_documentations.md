@@ -27,16 +27,22 @@ Hanya menampilkan course yang berstatus dipublikasikan (`is_published = true`) s
 
 *   **Endpoint:** `/api/v1/recommendations` atau `/recommendations`
 *   **Method:** `GET`
+*   **Headers:**
+    ```http
+    X-API-Key: brainpath_secret_token_change_me
+    ```
 *   **Query Parameters:**
     | Parameter | Tipe Data | Wajib | Deskripsi |
     | :--- | :--- | :--- | :--- |
     | `title` | `string` | **Ya** | Judul kursus yang ingin dicari rekomendasinya. |
+    | `level` | `string` | Tidak | Filter rekomendasi berdasarkan level kursus (contoh: `pemula`, `menengah`, `mahir`). |
 
 #### 📥 Contoh Request (cURL)
 ```bash
 curl -X 'GET' \
-  'http://localhost:8001/api/v1/recommendations?title=Dasar%20Pemrograman%20Python' \
-  -H 'accept: application/json'
+  'http://localhost:8001/api/v1/recommendations?title=Dasar%20Pemrograman%20Python&level=pemula' \
+  -H 'accept: application/json' \
+  -H 'X-API-Key: brainpath_secret_token_change_me'
 ```
 
 #### 📤 Contoh Response Sukses (`200 OK`)
@@ -49,14 +55,16 @@ curl -X 'GET' \
       "title": "Python untuk Analisis Data",
       "cosine_score": 0.1578,
       "category": "Data Science",
-      "skills": "Python, Pandas, NumPy, Data Analysis, Data Visualization"
+      "skills": "Python, Pandas, NumPy, Data Analysis, Data Visualization",
+      "level": "Pemula"
     },
     {
       "id": 3,
       "title": "Dasar Pemrograman Web",
       "cosine_score": 0.1293,
       "category": "Web Development",
-      "skills": "HTML5, CSS3, JavaScript, Responsive Web Design"
+      "skills": "HTML5, CSS3, JavaScript, Responsive Web Design",
+      "level": "Pemula"
     }
   ]
 }
@@ -67,6 +75,7 @@ curl -X 'GET' \
 *   `cosine_score`: Skor kemiripan antar-kursus (bernilai `0.0` s/d `1.0`). Semakin mendekati `1.0`, semakin mirip kursus tersebut dengan target.
 *   `category`: Kategori kursus (misal: Programming, Data Science).
 *   `skills`: Keterampilan utama yang dipelajari pada kursus tersebut.
+*   `level`: Tingkat kesulitan/level kursus (contoh: Pemula, Menengah, Mahir).
 
 *Catatan Perilaku Cold-Start (Keyword Search):*
 *   Jika judul yang dimasukkan tidak cocok persis (exact match), sistem akan otomatis mengaktifkan pencarian kata kunci berbasis TF-IDF untuk mencari kursus terdekat yang mengandung kata kunci tersebut.
@@ -84,6 +93,7 @@ Mengajukan pertanyaan akademik ke Chatbot AI (BrainPath). Jawaban chatbot disint
 *   **Headers:**
     ```http
     Content-Type: application/json
+    X-API-Key: brainpath_secret_token_change_me
     ```
 
 *Catatan Penting:* Parameter `course_id` dan `course_title` dikirim sebagai **Query Parameter** (di URL), sedangkan pertanyaan dikirim di **Request Body (JSON)**.
@@ -111,6 +121,7 @@ curl -X 'POST' \
   'http://localhost:8001/api/v1/chatbot?course_id=1' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
+  -H 'X-API-Key: brainpath_secret_token_change_me' \
   -d '{
   "user_question": "Jelaskan apa itu variabel dalam Python."
 }'

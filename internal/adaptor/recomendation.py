@@ -5,12 +5,13 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from typing import Optional
 from internal.usecase.recomendation import CourseUsecase
 from internal.wire.wire import get_course_usecase
+from pkg.utils.security import get_api_key
 import time
 
 router = APIRouter()
 
 # Endpoint Baru (GET /api/v1/recommendations)
-@router.get("/recommendations")
+@router.get("/recommendations", dependencies=[Depends(get_api_key)])
 def get_course_recommendations(
     title: str, 
     request: Request, 

@@ -21,4 +21,7 @@ class Settings:
     # Kunci API Google 
     GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
+    # API Key untuk mengamankan API publik
+    API_KEY_SECRET = os.getenv("API_KEY_SECRET")
+
 settings = Settings()

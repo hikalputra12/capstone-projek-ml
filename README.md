@@ -55,6 +55,9 @@ pip install -r requirements.txt
 ### 3. Konfigurasi Lingkungan (`.env`)
 Buat file bernama `.env` pada direktori utama proyek dan masukkan konfigurasi kredensial database Anda beserta API Key Google Gemini:
 ```env
+# APP ENVIRONMENT
+APP_ENV=local
+
 # DATABASE CONNECTION
 DATABASE_NAME=smart-education
 DATABASE_USERNAME=postgres
@@ -70,6 +73,9 @@ DATABASE_MAX_OPEN_CONN=10
 
 # GOOGLE AI STUDIO API KEY (GEMINI)
 GOOGLE_API_KEY=AIzaSy...
+
+# API Key untuk mengamankan API publik (Header: X-API-Key)
+API_KEY_SECRET=brainpath_secret_token_change_me
 ```
 
 ---
@@ -87,20 +93,25 @@ Jalankan entrypoint server utama menggunakan server ASGI Uvicorn:
 ```bash
 python main.py
 ```
-Aplikasi akan aktif dan mendengarkan permintaan pada port **8001**: `http://localhost:8001`
+Aplikasi akan aktif dan mendengarkan permintaan pada port **8001** (atau port yang diset di env `PORT`): `http://localhost:8001`
 
 ---
 
 ## 📊 Daftar API Endpoints Ringkas
 
+> [!IMPORTANT]  
+> Semua request ke endpoint API **wajib** menyertakan header berikut demi keamanan:  
+> *   **Header Key:** `X-API-Key`  
+> *   **Header Value:** *[Nilai dari API_KEY_SECRET di `.env` Anda]*
+
 | Fitur | Endpoint | Method | Parameter | Deskripsi |
 | :--- | :--- | :--- | :--- | :--- |
-| **Rekomendasi Kursus** | `/api/v1/recommendations` | `GET` | `title` | Rekomendasi kursus serupa berdasarkan judul. |
-| **AI Chatbot Akademik** | `/api/v1/chatbot` | `POST` | `course_id` (Query), `user_question` (Body) | Chatbot akademik ber-guardrail ketat. |
+| **Rekomendasi Kursus** | `/api/v1/recommendations` | `GET` | `title` (Wajib), `level` (Opsional) | Rekomendasi kursus serupa berdasarkan judul, opsional difilter berdasarkan level (pemula, menengah, mahir). |
+| **AI Chatbot Akademik** | `/api/v1/chatbot` | `POST` | `course_id` (Query/Opsional), `course_title` (Query/Opsional), `user_question` (Body/Wajib) | Chatbot akademik ber-guardrail ketat. |
 
 
 > [!TIP]
-> Untuk dokumentasi endpoint secara super detail beserta skema JSON, contoh request cURL, response sukses, dan error handling, silakan merujuk langsung ke file dokumentasi khusus: **[api_documentations.md](file:///home/haikal/capstone-projek-ml/api_documentations.md)**.
+> Untuk dokumentasi endpoint secara super detail beserta skema JSON, contoh request cURL, response sukses, dan error handling, silakan merujuk langsung ke file dokumentasi khusus: **[api_documentations.md](file:///c:/Users/Julianda/capstone-projek-ml-1/api_documentations.md)**.
 
 ---
 
