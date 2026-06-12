@@ -19,6 +19,10 @@ __pycache__/
 .venv/
 .env
 
+**/chroma_db/
+*.sqlite3
+*.bin
+
 # Code coverage profiles and other test artifacts
 *.out
 coverage.*

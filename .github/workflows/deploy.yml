@@ -1,0 +1,20 @@
+name: Deploy to Hugging Face Spaces
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Push to Hugging Face Hub
+        uses: huggingface/github-action@v3
+        with:
+          hf_token: ${{ secrets.HF_TOKEN }}
+          repository: Hero1012/brainpath-ai-engine
+          private: false
