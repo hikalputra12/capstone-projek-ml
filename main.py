@@ -2,13 +2,22 @@
 
 import uvicorn
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 if __name__ == "__main__":
+    # Mengambil PORT dari environment variable (default 8001 jika lokal)
+    port = int(os.getenv("PORT", 8001))
+    
+    # Reload hanya aktif jika APP_ENV = local atau development
+    app_env = os.getenv("APP_ENV", "local")
+    is_development = app_env in ["local", "development"]
     
     uvicorn.run(
         "server.server:create_app", # Langsung panggil factory function-nya
         host="0.0.0.0", 
-        port=8001, 
-        reload=True,
-        factory=True #memberitau uvicorn bahwa ini adalah factory function
+        port=port, 
+        reload=is_development,
+        factory=True # memberitahu uvicorn bahwa ini adalah factory function
     )

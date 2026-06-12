@@ -2,6 +2,7 @@
 # Handler API untuk memproses permintaan rekomendasi course.
 
 from fastapi import APIRouter, Depends, HTTPException, Request
+from typing import Optional
 from internal.usecase.recomendation import CourseUsecase
 from internal.wire.wire import get_course_usecase
 import time
@@ -13,15 +14,16 @@ router = APIRouter()
 def get_course_recommendations(
     title: str, 
     request: Request, 
+    level: Optional[str] = None,
     usecase: CourseUsecase = Depends(get_course_usecase)
 ):
     log = request.app.state.logger
     start_time = time.time()
 
-    log.info(f"Incoming Request | Title: {title}")
+    log.info(f"Incoming Request | Title: {title} | Level: {level}")
 
     try:
-        result = usecase.get_recommendations(title)
+        result = usecase.get_recommendations(title, level=level)
         duration = time.time() - start_time
         
         # Perbaikan log item_count agar merujuk ke recommendations

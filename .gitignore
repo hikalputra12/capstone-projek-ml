@@ -16,7 +16,8 @@ __pycache__/
 
 #sembunyikan file log
 *.log
-
+.venv/
+.env
 
 # Code coverage profiles and other test artifacts
 *.out
@@ -36,6 +37,7 @@ go.work.sum
 
 # env file
 .env
+venv/
 
 # Editor/IDE
 # .idea/

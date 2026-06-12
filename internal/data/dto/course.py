@@ -10,6 +10,7 @@ class CourseRecommendationResponse(BaseModel):
     cosine_score: float
     category: Optional[str]
     skills: Optional[str]
+    level: Optional[str] = None
 
     class Config:
         from_attributes = True

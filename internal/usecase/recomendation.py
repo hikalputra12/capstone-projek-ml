@@ -16,7 +16,7 @@ class CourseUsecase:
         self.cosine_sim = cosine_sim
         self.tfidf = tfidf_vectorizer
 
-    def _keyword_search(self, query: str, df) -> list:
+    def _keyword_search(self, query: str, df, level: str = None) -> list:
         """
         Fallback: transform query menggunakan TF-IDF vectorizer
         dan hitung cosine similarity terhadap semua course.
@@ -43,11 +43,27 @@ class CourseUsecase:
 
         # Hitung cosine similarity antara query dan semua course
         sim_scores = cosine_similarity(query_vector, course_matrix).flatten()
-        top_indices = sim_scores.argsort()[::-1][:5]  # Ambil top 5
+        sorted_indices = sim_scores.argsort()[::-1]
 
-        return [(int(i), float(sim_scores[i])) for i in top_indices if sim_scores[i] > 0]
+        top_matches = []
+        for i in sorted_indices:
+            score = sim_scores[i]
+            if score <= 0:
+                break
+            if len(top_matches) >= 5:
+                break
 
-    def get_recommendations(self, title: str) -> RecommendationBaseResponse:
+            if level:
+                row = df.iloc[i]
+                row_level = str(row.get('level', '')).strip().lower()
+                if row_level != level.strip().lower():
+                    continue
+
+            top_matches.append((int(i), float(score)))
+
+        return top_matches
+
+    def get_recommendations(self, title: str, level: str = None) -> RecommendationBaseResponse:
         # 1. Tarik data terfilter (hanya is_published = true, ORDER BY id ASC) dari DB
         df = self.repo.get_all_courses_dataframe()
         
@@ -90,6 +106,13 @@ class CourseUsecase:
                             continue
                         if len(top_matches) >= 5:
                             break
+
+                        if level:
+                            row = df.iloc[i]
+                            row_level = str(row.get('level', '')).strip().lower()
+                            if row_level != level.strip().lower():
+                                continue
+
                         top_matches.append((i, score))
                         
                     print(f"--- [DEBUG] 5 Skor teratas: {top_matches} ---")
@@ -100,7 +123,7 @@ class CourseUsecase:
         if use_keyword_search:
             # ── Keyword/cold-start fallback: gunakan TF-IDF transform ─────────
             print(f"--- [DEBUG] Usecase: '{title}' tidak ditemukan, fallback ke keyword search ---")
-            top_matches = self._keyword_search(title, df.copy())
+            top_matches = self._keyword_search(title, df.copy(), level=level)
             if not top_matches:
                 print("--- [DEBUG] Keyword search tidak menemukan hasil ---")
                 return RecommendationBaseResponse(target_course=title, recommendations=[])
@@ -115,7 +138,8 @@ class CourseUsecase:
                     title=str(row['title']),
                     cosine_score=round(float(score), 4),
                     category=str(row.get('category', 'N/A')),
-                    skills=str(row.get('skills', 'N/A'))
+                    skills=str(row.get('skills', 'N/A')),
+                    level=str(row.get('level', 'N/A'))
                 )
                 recommendations.append(rec_item)
                 print(f"--- [DEBUG] Added: {row['title']} (Score: {score:.4f}) ---")
