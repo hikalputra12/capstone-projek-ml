@@ -1,3 +1,12 @@
+---
+title: BrainPath AI - Course Recommendation & Chatbot Engine
+emoji: 🧠
+colorFrom: indigo
+colorTo: pink
+sdk: docker
+pinned: false
+---
+
 # BrainPath AI - Course Recommendation & Chatbot Engine
 
 Sistem rekomendasi kursus berbasis Machine Learning (**Content-Based Filtering**) dan AI Chatbot yang dikembangkan menggunakan **FastAPI** dan **PostgreSQL**. Projek ini dirancang sebagai mesin kecerdasan buatan utama untuk platform edukasi cerdas **BrainPath** guna memberikan rekomendasi konten pembelajaran presisi serta bimbingan akademik interaktif.
