@@ -52,3 +52,7 @@ pkg/ml-models/*.joblib
 pkg/ml-models/chroma_db*
 
 claude.md
+
+# Dokumentasi API
+api_documentations.md
+api_documentation.md
