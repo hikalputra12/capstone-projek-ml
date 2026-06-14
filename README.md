@@ -85,6 +85,11 @@ GOOGLE_API_KEY=AIzaSy...
 
 # API Key untuk mengamankan API publik (Header: X-API-Key)
 API_KEY_SECRET=8f9a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a
+
+# MLFLOW CONFIGURATION (Opsional, default menggunakan sqlite lokal & direktori ./mlruns)
+MLFLOW_TRACKING_URI=
+MLFLOW_EXPERIMENT_NAME=course-recommender
+MLFLOW_RUN_NAME=content-based-filtering
 ```
 
 ---
@@ -92,7 +97,7 @@ API_KEY_SECRET=8f9a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a
 ## 🏃 Cara Menjalankan Sistem
 
 ### Langkah Pertama: Sinkronisasi / Pelatihan Ulang Model ML
-Sebelum menjalankan server, model rekomendasi perlu dilatih untuk pertama kali agar file `.joblib` terbentuk di dalam direktori `pkg/ml-models/`:
+Sebelum menjalankan server, model rekomendasi perlu dilatih untuk pertama kali agar file `.joblib` terbentuk di dalam direktori `pkg/ml-models/`. Proses ini akan otomatis mencatat parameter dan metrik ke MLflow:
 ```bash
 python train_recommender.py
 ```
@@ -103,6 +108,13 @@ Jalankan entrypoint server utama menggunakan server ASGI Uvicorn:
 python main.py
 ```
 Aplikasi akan aktif dan mendengarkan permintaan pada port **8001** (atau port yang diset di env `PORT`): `http://localhost:8001`
+
+### Langkah Ketiga: Jalankan MLflow UI (Opsional)
+Untuk melihat visualisasi eksperimen, parameter, metrik, dan artifact model secara grafis, jalankan server MLflow UI lokal:
+```bash
+mlflow ui --port 5000
+```
+Setelah berjalan, Anda dapat mengakses dashboard MLflow di browser melalui alamat: [http://localhost:5000](http://localhost:5000)
 
 ---
 
@@ -117,10 +129,24 @@ Aplikasi akan aktif dan mendengarkan permintaan pada port **8001** (atau port ya
 | :--- | :--- | :--- | :--- | :--- |
 | **Rekomendasi Kursus** | `/api/v1/recommendations` | `GET` | `title` (Wajib), `level` (Opsional) | Rekomendasi kursus serupa berdasarkan judul, opsional difilter berdasarkan level (pemula, menengah, mahir). |
 | **AI Chatbot Akademik** | `/api/v1/chatbot` | `POST` | `course_id` (Query/Opsional), `course_title` (Query/Opsional), `user_question` (Body/Wajib) | Chatbot akademik ber-guardrail ketat. |
+| **Retrain Model ML** | `/api/v1/recommendations/retrain` | `POST` | None | Memicu training ulang model rekomendasi dengan data terpublikasi terbaru, reload model ke memori server secara real-time, dan track ke MLflow. |
+| **Health Check (Public)** | `/healthz` | `GET` | None | Mengecek kesehatan aplikasi dan memicu query `SELECT 1` ke Neon Database agar tidak masuk mode suspend (cold start). |
 
 
 > [!TIP]
 > Untuk dokumentasi endpoint secara super detail beserta skema JSON, contoh request cURL, response sukses, dan error handling, silakan merujuk langsung ke file dokumentasi khusus: **[api_documentations.md](file:///c:/Users/Julianda/capstone-projek-ml-1/api_documentations.md)**.
+
+---
+
+## ⚡ Mencegah Cold Start (Hugging Face & Neon)
+
+Layanan **Hugging Face Spaces** (tipe free) dan serverless **Neon Database** memiliki fitur otomatis masuk ke mode tidur (*suspend/sleep*) jika tidak menerima request dalam jangka waktu tertentu (biasanya 5–10 menit untuk Neon, dan 48 jam untuk Hugging Face). Ketika ada request baru setelah itu, sistem akan mengalami *cold start* (tertunda 5–15 detik).
+
+Untuk mencegah *cold start*, sistem ini dilengkapi dengan solusi otomatis:
+
+1. **Endpoint Health Check**: Tersedia endpoint publik `/healthz` yang secara aktif mengirim query `SELECT 1` ke Neon Database untuk menjaga database tetap bangun.
+2. **GitHub Actions Scheduler**: Workflow [.github/workflows/keep_alive.yml](file:///.github/workflows/keep_alive.yml) dikonfigurasi untuk melakukan *ping* (curl) ke URL Hugging Face Space Anda **setiap 24 jam** secara otomatis untuk mencegah Hugging Face masuk ke mode tidur.
+3. **Alternatif Pihak Ketiga (Sangat Direkomendasikan untuk Neon)**: Karena *cron job* GitHub Actions berjalan setiap 24 jam dan database Neon memiliki waktu suspend yang cepat (10 menit), Anda sangat disarankan mendaftarkan URL space Anda (`https://hero1012-brainpath-ai-engine.hf.space/healthz`) ke layanan monitoring gratis seperti **[cron-job.org](https://cron-job.org/)** atau **[UptimeRobot](https://uptimerobot.com/)** dengan interval pemeriksaan setiap **5–10 menit** jika ingin database Neon tidak mengalami cold start sama sekali.
 
 ---
 

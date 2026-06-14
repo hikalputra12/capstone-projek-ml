@@ -2,9 +2,12 @@
 # Inisialisasi aplikasi FastAPI, konfigurasi middleware CORS, lifespan startup/shutdown,
 # dan registrasi router API.
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager 
+from sqlalchemy import text
+from sqlalchemy.orm import Session
+from pkg.database.postgress import get_db 
 
 # Import router untuk Rekomendasi dan Chatbot
 from internal.adaptor.recomendation import router as course_handler 
@@ -64,6 +67,25 @@ def create_app() -> FastAPI:
             "message": "Welcome to BrainPath AI Engine",
             "features": ["Course Recommendation", "AI Chatbot Assistant"]
         }
+
+    @app.get("/healthz")
+    @app.get("/api/v1/healthz")
+    def health_check(db: Session = Depends(get_db)):
+        try:
+            # Query database untuk memastikan Neon tidak masuk ke mode suspend (cold start)
+            db.execute(text("SELECT 1"))
+            return {
+                "status": "healthy",
+                "database": "connected",
+                "message": "BrainPath AI Engine is active and Neon Database is awake!"
+            }
+        except Exception as e:
+            log.error(f"Health check failed: {str(e)}")
+            return {
+                "status": "unhealthy",
+                "database": "error",
+                "detail": str(e)
+            }
 
     app.state.logger = log
     log.info("Aplikasi FastAPI berhasil dibuat.")

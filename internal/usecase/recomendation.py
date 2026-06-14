@@ -149,3 +149,29 @@ class CourseUsecase:
             target_course=display_target,
             recommendations=recommendations
         )
+
+    def retrain_and_reload(self) -> dict:
+        """
+        Menjalankan proses training ulang model (pembelajaran dari database terbaru)
+        dan memuat ulang similarity matrix beserta vectorizer ke memori server (RAM).
+        """
+        from train_recommender import run_retrain
+        from internal.wire.wire import reload_ml_components
+        
+        # 1. Jalankan training ulang model dengan MLflow tracking
+        result = run_retrain()
+        
+        if result.get("status") == "success":
+            # 2. Muat ulang model terbaru dari disk ke variabel global RAM
+            reloaded = reload_ml_components()
+            if reloaded:
+                # 3. Sinkronkan reference model pada instance usecase saat ini
+                from internal.wire.wire import _cosine_sim, _tfidf_vectorizer
+                self.cosine_sim = _cosine_sim
+                self.tfidf = _tfidf_vectorizer
+                result["reloaded"] = True
+                print("--- Usecase: Retrain dan reload model berhasil! ---")
+            else:
+                result["reloaded"] = False
+                print("--- Usecase Warning: Model berhasil dilatih namun gagal di-reload ---")
+        return result

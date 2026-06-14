@@ -1,0 +1,22 @@
+name: Keep Alive (Prevent Cold Start)
+
+on:
+  schedule:
+    # Berjalan setiap 24 jam (sekali sehari)
+    - cron: '0 0 * * *'
+  # Memungkinkan pemicuan manual dari tab Actions di GitHub
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Hugging Face Space & Neon Database
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://hero1012-brainpath-ai-engine.hf.space/healthz)
+          echo "Ping sent to Hugging Face space. Response HTTP status: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -eq 200 ]; then
+            echo "Success: Space is active and Neon database is awake."
+          else
+            echo "Warning: Received HTTP status $HTTP_STATUS. Space might be waking up or experiencing issues."
+          fi

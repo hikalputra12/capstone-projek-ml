@@ -24,4 +24,9 @@ class Settings:
     # API Key untuk mengamankan API publik
     API_KEY_SECRET = os.getenv("API_KEY_SECRET")
 
+    # MLflow Settings
+    MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
+    MLFLOW_EXPERIMENT_NAME = os.getenv("MLFLOW_EXPERIMENT_NAME", "course-recommender")
+    MLFLOW_RUN_NAME = os.getenv("MLFLOW_RUN_NAME", "content-based-filtering")
+
 settings = Settings()

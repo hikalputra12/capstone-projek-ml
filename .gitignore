@@ -56,3 +56,15 @@ claude.md
 # Dokumentasi API
 api_documentations.md
 api_documentation.md
+
+# MLflow
+mlflow.db
+mlruns/
+*.db
+
+# Editor/IDE
+.vscode/
+
+# OS temporary files
+.DS_Store
+Thumbs.db

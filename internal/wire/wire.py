@@ -43,6 +43,18 @@ def load_ml_components():
         print("--- Wiring: Initializing ChatUsecase (Gemini with Postgres Metadata Guardrails) ---")
         _chat_usecase = ChatUsecase()
 
+def reload_ml_components() -> bool:
+    """
+    Memuat ulang model rekomendasi terupdate dari disk ke memori RAM global.
+    """
+    global _cosine_sim, _tfidf_vectorizer
+    if os.path.exists(MODEL_PATH) and os.path.exists(TFIDF_PATH):
+        print("--- Wiring: Reloading Similarity Matrix & Vectorizer ---")
+        _cosine_sim = joblib.load(MODEL_PATH)
+        _tfidf_vectorizer = joblib.load(TFIDF_PATH)
+        return True
+    return False
+
 # --- Dependencies untuk REKOMENDASI COURSE ---
 
 def get_course_repository(db: Session = Depends(get_db)) -> CourseRepository:
